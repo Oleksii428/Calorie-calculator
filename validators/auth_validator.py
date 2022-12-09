@@ -4,26 +4,17 @@ from enums.user_characteristics_enum import HEIGHT, WEIGHT, AGE, PHYSICAL_ACTIVI
 
 
 def name_validator():
-    isValid = False
-
-    while not isValid:
+    while True:
         name = input("Enter name: ")
-        for letter in name.lower():
-            if letter not in "qwertyuiopasdfghjklzxcvbnm":
-                print("Name not valid.")
-                isValid = False
-            elif len(name) <= 1 or len(name) > 20:
-                print("Name not valid(min: 2, max: 20).")
-                isValid = False
-            else:
-                isValid = True
-    return name.title()
+
+        if re.match(r"^[a-zA-Z]{2,15}$", name):
+            return name.title()
+        else:
+            print("Name not valid. Only letters. Min: 2, max: 15.")
 
 
 def password_validator():
-    isValid = False
-
-    while not isValid:
+    while True:
         password = input("Enter password: ")
 
         if re.match(r"^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%_*#?&])[A-Za-z\d@$!%_*#?&]{4,}$", password):
@@ -33,15 +24,12 @@ def password_validator():
 
 
 def float_validator(characteristic):
-    isValid = False
-
-    while not isValid:
+    while True:
         data = input(f"Enter {characteristic}: ")
         try:
             data = float(data)
         except ValueError:
-            print(f"{characteristic} not valid.")
-            isValid = False
+            print(f"{characteristic} not valid. Only int or float.")
         else:
             if characteristic == WEIGHT and data <= 14 or data > 200:
                 print(f"{characteristic} not valid(min: 20 kg, max: 200).")
@@ -52,9 +40,7 @@ def float_validator(characteristic):
 
 
 def int_validator(characteristic):
-    isValid = False
-
-    while not isValid:
+    while True:
         data = input(f"Enter {characteristic}: ")
 
         if characteristic == AGE:
@@ -76,9 +62,7 @@ def int_validator(characteristic):
 
 
 def gender_validator():
-    isValid = False
-
-    while not isValid:
+    while True:
         gender = input("Enter gender: ").lower()
 
         if gender == MALE or gender == FEMALE:

@@ -1,0 +1,5 @@
+FOOD_NAME = "Food name"
+ENERGY = "Energy"
+PROTEIN = "Protein"
+FATS = "Fats"
+CARBOHYDRATE = "Carbohydrate"

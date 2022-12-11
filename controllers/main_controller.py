@@ -1,15 +1,65 @@
-from enums.user_characteristics_enum import WEIGHT, HEIGHT, AGE, GENDER, MALE, FEMALE, NAME, PASSWORD, PHYSICAL_ACTIVITY
+from enums.table_enum import FOOD_NAME, PROTEIN, FATS, CARBOHYDRATE, ENERGY
+from enums.user_characteristics_enum import WEIGHT, HEIGHT, AGE, GENDER, MALE, FEMALE, NAME, PASSWORD, \
+    PHYSICAL_ACTIVITY, PRODUCTS
 from enums.weight_types_enum import LOWER, NORMAL, OVER, FATTINESS_1, FATTINESS_2, FATTINESS_3
 from enums.food_courses_enum import WEIGHT_GAIN, WEIGHT_SAFE, WEIGHT_WASTE
-from services.db_service import read_login_user
+from middlewares.user_middleware import is_user_exists
+from services.db_service import read_login_user, read_db, write_db, write_login_user, read_food
+from validators.auth_validator import password_validator, float_validator, int_validator, gender_validator
+from prettytable import PrettyTable
 
 
 def get_details():
     login_user = read_login_user()
 
-    for key in login_user:
-        if key != NAME and key != PASSWORD:
-            print(f"Your {key}: {login_user[key]}")
+    if not login_user:
+        print("You must login first")
+    else:
+        for key in login_user:
+            if key != NAME and key != PASSWORD:
+                print(f"Your {key}: {login_user[key]}")
+
+
+def change_user_info():
+    login_user = read_login_user()
+    user_info = login_user.copy()
+    user_info.pop(NAME)
+
+    if not login_user:
+        print("You must login first")
+    else:
+        change_characteristic = input(f"Select what you want to change: {', '.join(user_info)}, or back: ")
+
+        if change_characteristic == "back":
+            return
+
+        while change_characteristic not in login_user:
+            print("Invalid characteristic")
+            change_characteristic = input(f"Select what you want to change: {', '.join(user_info)}: ")
+
+        new_value = 0
+
+        if change_characteristic == PASSWORD:
+            new_value = password_validator()
+        elif change_characteristic == WEIGHT:
+            new_value = float_validator(WEIGHT)
+        elif change_characteristic == HEIGHT:
+            new_value = float_validator(HEIGHT)
+        elif change_characteristic == AGE:
+            new_value = int_validator(AGE)
+        elif change_characteristic == GENDER:
+            new_value = gender_validator()
+        elif change_characteristic == PHYSICAL_ACTIVITY:
+            new_value = int_validator(PHYSICAL_ACTIVITY)
+
+        db = read_db()
+        for index, user in enumerate(db):
+            if user[NAME] == login_user[NAME]:
+                db[index][change_characteristic] = new_value
+                write_db(db)
+                write_login_user(db[index])
+                print("Changes complete")
+                break
 
 
 def get_recommendations():
@@ -25,16 +75,16 @@ def get_recommendations():
         if imt < 18.5:
             weight_type = LOWER
             food_course = WEIGHT_GAIN
-        elif imt >= 18.5 < 25:
+        elif 18.5 <= imt < 25:
             weight_type = NORMAL
             food_course = WEIGHT_SAFE
-        elif imt >= 25 < 30:
+        elif 25 <= imt < 30:
             weight_type = OVER
             food_course = WEIGHT_WASTE
-        elif imt >= 30 < 35:
+        elif 30 <= imt < 35:
             weight_type = FATTINESS_1
             food_course = WEIGHT_WASTE
-        elif imt >= 35 < 40:
+        elif 35 <= imt < 40:
             weight_type = FATTINESS_2
             food_course = WEIGHT_WASTE
         elif imt >= 40:
@@ -49,19 +99,19 @@ def get_recommendations():
         elif login_user[GENDER] == FEMALE:
             bmr = 447.593 + (9.247 * login_user[WEIGHT]) + (3.097 * login_user[HEIGHT]) + (4.33 * login_user[AGE])
 
-        coefficient_physic_activity = 0
+        coefficient_physical_activity = 0
 
         match login_user[PHYSICAL_ACTIVITY]:
             case 1:
-                coefficient_physic_activity = 1.375
+                coefficient_physical_activity = 1.375
             case 2:
-                coefficient_physic_activity = 1.55
+                coefficient_physical_activity = 1.55
             case 3:
-                coefficient_physic_activity = 1.725
+                coefficient_physical_activity = 1.725
             case 4:
-                coefficient_physic_activity = 1.9
+                coefficient_physical_activity = 1.9
 
-        daily_calorie_norm = round(bmr * coefficient_physic_activity)
+        daily_calorie_norm = round(bmr * coefficient_physical_activity)
 
         protein_min = 0
         protein_max = 0
@@ -73,32 +123,36 @@ def get_recommendations():
         carbohydrate_max = 0
 
         if food_course == WEIGHT_WASTE:
-            protein_min = (daily_calorie_norm * 25) / 100
-            protein_max = (daily_calorie_norm * 35) / 100
+            daily_calorie_norm = daily_calorie_norm * 0.85
 
-            fats_min = (daily_calorie_norm * 25) / 100
-            fats_max = (daily_calorie_norm * 30) / 100
+            protein_min = daily_calorie_norm * 0.25
+            protein_max = daily_calorie_norm * 0.35
 
-            carbohydrate_min = (daily_calorie_norm * 40) / 100
-            carbohydrate_max = (daily_calorie_norm * 50) / 100
+            fats_min = daily_calorie_norm * 0.25
+            fats_max = daily_calorie_norm * 0.3
+
+            carbohydrate_min = daily_calorie_norm * 0.4
+            carbohydrate_max = daily_calorie_norm * 0.5
         elif food_course == WEIGHT_SAFE:
-            protein_min = (daily_calorie_norm * 10) / 100
-            protein_max = (daily_calorie_norm * 15) / 100
+            protein_min = daily_calorie_norm * 0.1
+            protein_max = daily_calorie_norm * 0.15
 
-            fats_min = (daily_calorie_norm * 25) / 100
-            fats_max = (daily_calorie_norm * 30) / 100
+            fats_min = daily_calorie_norm * 0.25
+            fats_max = daily_calorie_norm * 0.3
 
-            carbohydrate_min = (daily_calorie_norm * 60) / 100
-            carbohydrate_max = (daily_calorie_norm * 75) / 100
+            carbohydrate_min = daily_calorie_norm * 0.6
+            carbohydrate_max = daily_calorie_norm * 0.75
         elif food_course == WEIGHT_GAIN:
-            protein_min = (daily_calorie_norm * 30) / 100
-            protein_max = (daily_calorie_norm * 35) / 100
+            daily_calorie_norm = daily_calorie_norm * 1.15
 
-            fats_min = (daily_calorie_norm * 25) / 100
-            fats_max = (daily_calorie_norm * 30) / 100
+            protein_min = daily_calorie_norm * 0.3
+            protein_max = daily_calorie_norm * 0.35
 
-            carbohydrate_min = (daily_calorie_norm * 45) / 100
-            carbohydrate_max = (daily_calorie_norm * 55) / 100
+            fats_min = daily_calorie_norm * 0.25
+            fats_max = daily_calorie_norm * 0.3
+
+            carbohydrate_min = daily_calorie_norm * 0.45
+            carbohydrate_max = daily_calorie_norm * 0.55
 
         pfc = {
             "protein": f"from {round(protein_min)} to {round(protein_max)}",
@@ -114,49 +168,66 @@ def get_recommendations():
                 "Увага! Найважливіше для тих, хто бажає схуднути - менше калорій, ніж потрібно для базового обміну "
                 "речовин, вживати не можна. Так людина не худне, а завдає непоправної шкоди здоров'ю!!!"
             )
-        print(f"Добова норма споживаних калорій: {daily_calorie_norm}.")
+        print(f"Добова норма споживаних калорій: {round(daily_calorie_norm)}.")
         print(f"Баланс білків, жирів і вуглеводів: ")
         for key in pfc:
             print(f"{key}: {pfc[key]}")
 
-# Як розрахувати норму білків, жирів і вуглеводів?
-#
-# Щоденна норма БЖУ - це кількість білків, жирів і вуглеводів, необхідних для збереження балансу поживних речовин і підтримки організму в формі.
-#
-# Як же розрахувати свій БЖУ? Співвідношення БЖУ при схудненні залежить від кількості споживаних калорій і обчислюється в процентному співвідношенні від допустимої норми калорій. Також їх баланс залежить від того, якого ефекту ви хочете досягти.
-#
-# Білків - 25-35%. protein
-# Жирів - 25-30%. fats
-# Норма вуглеводів в день при СХУДНЕННІ - 40-50% від суми калорій. carbohydrate
-#
-# Ідеальним для зниження ваги дієтологи вважають таке співвідношення БЖУ: по 30% білків і жирів, а також 40% вуглеводів. Тобто, добова норма калорій набирається 30-ма відсотками білкових продуктів, 40% вуглеводів і 30% жирів.
-#
-# При НАБОРІ маси
-# Добова норма білків - 30-35%;
-# Жирів - 25-30%;
-# Денна норма вуглеводів - 45-55%.
-#
-# При підрахунках необхідно пам'ятати, що:
-# 1 грам білка і вуглеводів - це 4 калорії;
-# 1 грам жиру - 9 калорій.
-# Формула розрахунку БЖУ при схудненні (30% білка і жиру, 40% вуглеводів):
-#
-# Вуглеводи = (норма кКал Х 0,4) / 4;
-# Білки = (норма кКал Х 0,3) / 4;
-# Жири = (норма кКал Х 0,3) /
-# Розглянемо, як розраховується БЖУ на прикладі.
-#
-# Таким чином, дівчина, яка бажає схуднути, з допустимим добовим коридором калорій від 1400 до 1750 кКал повинна вживати в день:
-#
-# Від 105 до 131 грама білків;
-# Від 47 до 58 грамів жирів;
-# Від 140 до 175 грамів вуглеводів.
-# Ось і всі розрахунки. Якщо розібратися, нічого складного в підрахунку КБЖУ немає.
-#
-# Поради:
-# • Незалежно від одержаних розрахунків, щодня потрібно з'їдати не менше 35 грам жирів.
-# • Намагайтеся віддавати перевагу складним вуглеводам.
-# • Отримана в ході розрахунків норма білка повинна складати від 0,7 до 2 грам на 1 кг вашої ваги.
-# • При розрахунку КБЖУ і складанні свого щоденного меню не забувайте про основні правила правильного харчування. Тоді процес схуднення буде ще більш легким і ефективним.
-#
-# Якщо у вас немає часу або бажання робити підрахунки самостійно, ви можете легко провести розрахунок калорій, білків, жирів і вуглеводів (КБЖУ) за допомогою онлайн калькулятора, спеціальної програми або навіть додатку на смартфоні. В інтернеті є безліч сайтів, на яких це можна зробити швидко і безкоштовно. Меньше
+
+def get_key(food):
+    number = int(input("Enter number of product: "))
+    key = list(food.keys())[number - 1]
+    return key
+
+
+def calorie_calculator():
+    login_user = read_login_user()
+
+    if not login_user:
+        print("You must login first.")
+    else:
+        table = PrettyTable()
+        table.field_names = ["№", FOOD_NAME, ENERGY, PROTEIN, FATS, CARBOHYDRATE]
+        food = read_food()
+        n = 1
+        for key in food:
+            table.add_row([n, key, *food[key].values()])
+            n += 1
+        print(table)
+
+        login_user = read_login_user()
+        user_products = login_user[PRODUCTS]
+
+        user_table = PrettyTable()
+        user_table.field_names = ["№", FOOD_NAME, ENERGY, PROTEIN, FATS, CARBOHYDRATE]
+        h = 1
+        for product in user_products:
+            name = list(product.keys())[0]
+            user_table.add_row([h, name, *product[name].values()])
+            h += 1
+        if user_table.rows:
+            print("Your table:")
+            print(user_table)
+        else:
+            print("Your table is empty")
+
+        wanna_add = input("Do you want to add product in to your table? (y or n): ")
+        while wanna_add == "y":
+            number = get_key(food)
+            user_table.add_row([h, number, *food[number].values()])
+            h += 1
+
+            db = read_db()
+            l_user = is_user_exists(db, login_user[NAME])
+            for index, user in enumerate(db):
+                if user[NAME] == l_user[NAME]:
+                    l_user[PRODUCTS].append({number: food[number]})
+                    db[index] = l_user
+                    break
+            write_db(db)
+
+            login_user[PRODUCTS].append({number: food[number]})
+            write_login_user(login_user)
+
+            print(user_table)
+            wanna_add = input("Do you want to add product in to your table? (y or n): ")

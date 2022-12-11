@@ -1,9 +1,1 @@
-{
-  "name": "Misha",
-  "password": "m1sh@",
-  "weight": 60.0,
-  "height": 180.0,
-  "age": 18,
-  "gender": "male",
-  "physical activity": 2
-}
+{"name": "Sahsa", "password": "sh@1", "weight": 80.0, "height": 180.0, "age": 33, "gender": "female", "physical activity": 3, "products": [{"Brown Rice": {"energy": 1490, "protein": 7.6, "fat": 2.6, "carbohydrate": 72.5}}, {"Wholegrain Pasta": {"energy": 1390, "protein": 13, "fat": 2.5, "carbohydrate": 57}}]}

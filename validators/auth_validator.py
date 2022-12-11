@@ -59,6 +59,8 @@ def int_validator(characteristic):
                 return int(data)
             else:
                 print(f"{characteristic} not valid(only int, min: 1, max: 4).")
+        else:
+            print(f"{characteristic} not valid.")
 
 
 def gender_validator():

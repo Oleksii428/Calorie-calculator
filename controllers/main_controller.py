@@ -1,12 +1,14 @@
-from enums.table_enum import FOOD_NAME, PROTEIN, FATS, CARBOHYDRATE, ENERGY
+from prettytable import PrettyTable
+
+from enums.table_enum import FOOD_NAME, PROTEIN, FAT, CARBOHYDRATE, ENERGY
 from enums.user_characteristics_enum import WEIGHT, HEIGHT, AGE, GENDER, MALE, FEMALE, NAME, PASSWORD, \
     PHYSICAL_ACTIVITY, PRODUCTS
 from enums.weight_types_enum import LOWER, NORMAL, OVER, FATTINESS_1, FATTINESS_2, FATTINESS_3
 from enums.food_courses_enum import WEIGHT_GAIN, WEIGHT_SAFE, WEIGHT_WASTE
 from middlewares.user_middleware import is_user_exists
-from services.db_service import read_login_user, read_db, write_db, write_login_user, read_food
+from services.db_service import read_login_user, read_db, write_db, write_login_user, read_food, write_food
 from validators.auth_validator import password_validator, float_validator, int_validator, gender_validator
-from prettytable import PrettyTable
+from validators.product_validator import title_validator, epfc_validator, number_validator
 
 
 def get_details():
@@ -174,10 +176,23 @@ def get_recommendations():
             print(f"{key}: {pfc[key]}")
 
 
-def get_key(food):
-    number = int(input("Enter number of product: "))
-    key = list(food.keys())[number - 1]
-    return key
+def get_action():
+    action = input(
+        "[Calorie Calculator] Enter number of an action: show your table=1, add product to your table=2, remove product from your table=3, create new "
+        "product=4, show main table=5, back to main menu=0: ")
+    return action
+
+
+def print_table():
+    table = PrettyTable()
+    table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
+                         f"{CARBOHYDRATE}/100g"]
+    food = read_food()
+    n = 1
+    for key in food:
+        table.add_row([n, key, *food[key].values()])
+        n += 1
+    print(table)
 
 
 def calorie_calculator():
@@ -186,48 +201,129 @@ def calorie_calculator():
     if not login_user:
         print("You must login first.")
     else:
-        table = PrettyTable()
-        table.field_names = ["№", FOOD_NAME, ENERGY, PROTEIN, FATS, CARBOHYDRATE]
+        print_table()
         food = read_food()
-        n = 1
-        for key in food:
-            table.add_row([n, key, *food[key].values()])
-            n += 1
-        print(table)
 
         login_user = read_login_user()
         user_products = login_user[PRODUCTS]
 
         user_table = PrettyTable()
-        user_table.field_names = ["№", FOOD_NAME, ENERGY, PROTEIN, FATS, CARBOHYDRATE]
+        user_table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
+                                  f"{CARBOHYDRATE}/100g"]
         h = 1
         for product in user_products:
             name = list(product.keys())[0]
             user_table.add_row([h, name, *product[name].values()])
             h += 1
-        if user_table.rows:
-            print("Your table:")
-            print(user_table)
-        else:
-            print("Your table is empty")
 
-        wanna_add = input("Do you want to add product in to your table? (y or n): ")
-        while wanna_add == "y":
-            number = get_key(food)
-            user_table.add_row([h, number, *food[number].values()])
-            h += 1
+        action = get_action()
 
-            db = read_db()
-            l_user = is_user_exists(db, login_user[NAME])
-            for index, user in enumerate(db):
-                if user[NAME] == l_user[NAME]:
-                    l_user[PRODUCTS].append({number: food[number]})
-                    db[index] = l_user
-                    break
-            write_db(db)
+        while action != "0":
+            match action:
+                case "1":
+                    if not user_products:
+                        print("Your table is empty")
+                    else:
+                        new_user_table = PrettyTable()
+                        new_user_table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g",
+                                                      f"{FAT}/100g",
+                                                      f"{CARBOHYDRATE}/100g"]
+                        h = 1
+                        for product in user_products:
+                            name = list(product.keys())[0]
+                            new_user_table.add_row([h, name, *product[name].values()])
+                            h += 1
+                        print(new_user_table)
 
-            login_user[PRODUCTS].append({number: food[number]})
-            write_login_user(login_user)
+                    action = get_action()
+                case "2":
+                    max_number = 0
+                    for _ in food:
+                        max_number += 1
+                    number = number_validator("Number of product", max_number)
+                    food_title = list(food.keys())[number - 1]
 
-            print(user_table)
-            wanna_add = input("Do you want to add product in to your table? (y or n): ")
+                    is_product_exists = False
+
+                    for product in user_products:
+                        if list(product.keys())[0].startswith(food_title):
+                            is_product_exists = True
+
+                    if not is_product_exists:
+                        weight = int(input("Enter weight of product (g): "))
+                        user_table.add_row(
+                            [h, f"{food_title}-{weight}",
+                             *[round(i / 100 * weight, 1) for i in food[food_title].values()]]
+                        )
+                        h += 1
+
+                        db = read_db()
+                        l_user = is_user_exists(db, login_user[NAME])
+                        for index, user in enumerate(db):
+                            if user[NAME] == l_user[NAME]:
+                                for value in food[food_title]:
+                                    food[food_title][value] = round((food[food_title][value] / 100) * weight, 1)
+                                l_user[PRODUCTS].append({f"{food_title}-{weight}": food[food_title]})
+                                db[index] = l_user
+                                break
+                        write_db(db)
+
+                        login_user[PRODUCTS].append({f"{food_title}-{weight}": food[food_title]})
+                        write_login_user(login_user)
+                        print(f"Product {food_title} has been added to your table")
+                    else:
+                        print("This product already in your table")
+
+                    action = get_action()
+
+                case "3":
+                    max_number = 0
+                    for _ in food:
+                        max_number += 1
+                    number = number_validator("Number of product", max_number)
+
+                    db = read_db()
+                    l_user = is_user_exists(db, login_user[NAME])
+                    delete_product = list(l_user[PRODUCTS][number - 1].keys())[0]
+                    l_user[PRODUCTS].pop(number - 1)
+                    write_db(db)
+
+                    login_user[PRODUCTS].pop(number - 1)
+
+                    write_login_user(login_user)
+                    print(f"Product {delete_product} has been deleted")
+                    if not user_table.rows:
+                        print("Your table is empty")
+
+                    action = get_action()
+                case "4":
+                    product_title = title_validator()
+                    energy = epfc_validator(ENERGY)
+                    protein = epfc_validator(PROTEIN)
+                    fat = epfc_validator(FAT)
+                    carbohydrate = epfc_validator(CARBOHYDRATE)
+
+                    food[product_title] = {ENERGY: energy, PROTEIN: protein, FAT: fat,
+                                           CARBOHYDRATE: carbohydrate}
+
+                    new_table = PrettyTable()
+                    new_table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
+                                             f"{CARBOHYDRATE}/100g"]
+                    write_food(food)
+                    food = read_food()
+                    n = 1
+                    for key in food:
+                        new_table.add_row([n, key, *food[key].values()])
+                        n += 1
+                    print(new_table)
+                    print(f"Product {product_title} has been added to main table")
+
+                    action = get_action()
+                case "5":
+                    print_table()
+
+                    action = get_action()
+                case _:
+                    print("Unknown command")
+
+                    action = get_action()

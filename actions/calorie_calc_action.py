@@ -78,8 +78,6 @@ def calorie_calculator():
                          f"{round(carbohydrate_sum, 1)}"])
                     print(new_user_table)
                     print(energy_sum)
-
-                action = get_action()
             case "2":
                 max_number = 0
                 for _ in food:
@@ -118,9 +116,6 @@ def calorie_calculator():
                     print(f"Product {food_title} has been added to your table")
                 else:
                     print("This product already in your table")
-
-                action = get_action()
-
             case "3":
                 if not user_table.rows:
                     print("Your table is empty")
@@ -140,8 +135,6 @@ def calorie_calculator():
 
                     write_login_user(login_user)
                     print(f"Product {delete_product} has been deleted")
-
-                action = get_action()
             case "4":
                 product_title = title_validator()
                 energy = epfc_validator(ENERGY)
@@ -163,13 +156,8 @@ def calorie_calculator():
                     n += 1
                 print(new_table)
                 print(f"Product {product_title} has been added to main table")
-
-                action = get_action()
             case "5":
                 print_table()
-
-                action = get_action()
             case _:
                 print("Unknown command")
-
-                action = get_action()
+        action = get_action()

@@ -1,10 +1,1 @@
-{
-  "name": "Sahsa",
-  "password": "sh@1",
-  "weight": 80.0,
-  "height": 180.0,
-  "age": 33,
-  "gender": "female",
-  "physical activity": 3,
-  "products": []
-}
+{"name": "Nastia", "password": "n@s1a", "weight": 80.0, "height": 180.0, "age": 44, "gender": "female", "physical activity": 3, "products": []}

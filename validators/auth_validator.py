@@ -1,6 +1,6 @@
 import re
 
-from enums.user_characteristics_enum import HEIGHT, WEIGHT, AGE, PHYSICAL_ACTIVITY, MALE, FEMALE
+from enums import HEIGHT, WEIGHT, AGE, PHYSICAL_ACTIVITY, MALE, FEMALE
 
 
 def name_validator():

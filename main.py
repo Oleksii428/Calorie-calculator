@@ -1,7 +1,6 @@
 import sys
 
-from controllers.auth_controller import register, login, logout
-from controllers.main_controller import get_details, get_recommendations, change_user_info, calorie_calculator
+from actions import *
 
 if __name__ == "__main__":
     while True:

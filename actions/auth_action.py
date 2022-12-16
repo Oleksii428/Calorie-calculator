@@ -1,8 +1,7 @@
-from enums.user_characteristics_enum import NAME, WEIGHT, HEIGHT, AGE, PHYSICAL_ACTIVITY, GENDER, PASSWORD, PRODUCTS
-from services.db_service import read_db, write_db, write_login_user, read_login_user
-from middlewares.user_middleware import is_user_exists
-from validators.auth_validator import name_validator, password_validator, float_validator, int_validator, \
-    gender_validator
+from enums import NAME, WEIGHT, HEIGHT, AGE, PHYSICAL_ACTIVITY, GENDER, PASSWORD, PRODUCTS
+from services import read_db, write_db, write_login_user
+from middlewares import is_user_exists, is_user_login
+from validators import name_validator, password_validator, float_validator, int_validator, gender_validator
 
 
 def register():
@@ -38,6 +37,11 @@ def register():
 
 
 def login():
+    login_user = is_user_login()
+    if login_user:
+        print(f"User {login_user[NAME]} is already login. You need to logout first")
+        return
+
     user_name = input("Enter name: ").title()
 
     db = read_db()
@@ -60,7 +64,12 @@ def login():
 
 
 def logout():
-    login_user = read_login_user()
+    login_user = is_user_login()
 
-    write_login_user({})
-    print(f"Goodbye, {login_user[NAME]}!")
+    if login_user:
+        write_login_user({})
+        print(f"Goodbye, {login_user[NAME]}!")
+    else:
+        print("Not login user")
+
+

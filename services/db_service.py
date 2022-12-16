@@ -23,10 +23,10 @@ def write_food(data):
         json.dump(data, food)
 
 
-def read_login_user():
-    with open('./data_base/login_user.json') as login_user:
-        login_user = json.load(login_user)
-        return login_user
+# def read_login_user():
+#     with open('./data_base/login_user.json') as login_user:
+#         login_user = json.load(login_user)
+#         return login_user
 
 
 def write_login_user(user):

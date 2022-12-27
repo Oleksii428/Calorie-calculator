@@ -12,7 +12,7 @@ def get_details():
         return
 
     for key in login_user:
-        if key != NAME and key != PASSWORD:
+        if key != NAME and key != PASSWORD and key != PRODUCTS:
             print(f"Your {key}: {login_user[key]}")
 
 

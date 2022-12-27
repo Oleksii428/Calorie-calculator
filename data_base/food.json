@@ -118,11 +118,5 @@
     "protein": 1.0,
     "fat": 0.2,
     "carbohydrate": 4.4
-  },
-  "Egg": {
-    "calories": 2.0,
-    "protein": 2.0,
-    "fat": 2.0,
-    "carbohydrate": 2.0
   }
 }

@@ -1,4 +1,12 @@
-from prettytable import PrettyTable
+import os
+
+try:
+    from prettytable import PrettyTable
+except ImportError:
+    print("Installing prettytable...")
+    os.system("pip install prettytable")
+    print("Installing prettytable finished.")
+    from prettytable import PrettyTable
 
 from enums import *
 from middlewares import *

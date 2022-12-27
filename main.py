@@ -25,6 +25,7 @@ if __name__ == "__main__":
             case "7":
                 calorie_calculator()
             case "0":
+                print("Goodbye")
                 sys.exit()
             case _:
                 print("Unknown action")

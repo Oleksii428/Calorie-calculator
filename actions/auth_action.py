@@ -37,20 +37,22 @@ def register():
 
 
 def login():
+    db = read_db()
     login_user = is_user_login()
     if login_user:
         print(f"User {login_user[NAME]} is already login. You need to logout first")
         return
+    elif not db:
+        print(f"You need to register first")
+        return
 
     user_name = input("Enter name: ").title()
-
-    db = read_db()
 
     user = is_user_exists(db, user_name)
 
     while not user:
         print(f"user with name {user_name} not found")
-        user_name = input("Enter name again: ")
+        user_name = input("Enter name again: ").title()
         user = is_user_exists(db, user_name)
 
     user_password = input("Enter password: ")
@@ -71,5 +73,3 @@ def logout():
         print(f"Goodbye, {login_user[NAME]}!")
     else:
         print("Not login user")
-
-

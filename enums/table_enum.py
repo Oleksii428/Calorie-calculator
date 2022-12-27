@@ -1,5 +1,5 @@
 FOOD_NAME = "food name"
-ENERGY = "energy"
+CALORIES = "calories"
 PROTEIN = "protein"
 FAT = "fat"
 CARBOHYDRATE = "carbohydrate"

@@ -1,3 +1,3 @@
-WEIGHT_GAIN = "набір ваги"
-WEIGHT_SAFE = "підтримання ваги"
-WEIGHT_WASTE = "схуднення"
+WEIGHT_GAIN = "gaining weight"
+WEIGHT_SAFE = "weight maintenance"
+WEIGHT_WASTE = "waste"

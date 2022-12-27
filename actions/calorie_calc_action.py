@@ -16,7 +16,7 @@ def get_action():
 
 def print_table():
     table = PrettyTable()
-    table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
+    table.field_names = ["№", f"{FOOD_NAME}-g", f"{CALORIES}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
                          f"{CARBOHYDRATE}/100g"]
     food = read_food()
 
@@ -37,11 +37,10 @@ def calorie_calculator():
     print_table()
     food = read_food()
 
-    login_user = is_user_login()
     user_products = login_user[PRODUCTS]
 
     user_table = PrettyTable()
-    user_table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
+    user_table.field_names = ["№", f"{FOOD_NAME}-g", f"{CALORIES}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
                               f"{CARBOHYDRATE}/100g"]
 
     action = get_action()
@@ -53,7 +52,7 @@ def calorie_calculator():
                     print("Your table is empty")
                 else:
                     new_user_table = PrettyTable()
-                    new_user_table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g",
+                    new_user_table.field_names = ["№", f"{FOOD_NAME}-g", f"{CALORIES}/100g", f"{PROTEIN}/100g",
                                                   f"{FAT}/100g",
                                                   f"{CARBOHYDRATE}/100g"]
                     energy_sum = 0
@@ -65,7 +64,7 @@ def calorie_calculator():
                     for product in user_products:
                         name = list(product.keys())[0]
 
-                        energy_sum += product[name][ENERGY]
+                        energy_sum += product[name][CALORIES]
                         protein_sum += product[name][PROTEIN]
                         fat_sum += product[name][FAT]
                         carbohydrate_sum += product[name][CARBOHYDRATE]
@@ -77,11 +76,8 @@ def calorie_calculator():
                         ["*", "Sum", f"{round(energy_sum, 1)}", f"{round(protein_sum, 1)}", f"{round(fat_sum, 1)}",
                          f"{round(carbohydrate_sum, 1)}"])
                     print(new_user_table)
-                    print(energy_sum)
             case "2":
-                max_number = 0
-                for _ in food:
-                    max_number += 1
+                max_number = len(food)
                 number = number_validator("Number of product", max_number)
                 food_title = list(food.keys())[number - 1]
 
@@ -92,7 +88,7 @@ def calorie_calculator():
                         is_product_exists = True
 
                 if not is_product_exists:
-                    weight = int(input("Enter weight of product (g): "))
+                    weight = number_validator("weight of product(g)", 5000)
                     h = 0
                     user_table.add_row(
                         [h, f"{food_title}-{weight}",
@@ -117,12 +113,10 @@ def calorie_calculator():
                 else:
                     print("This product already in your table")
             case "3":
-                if not user_table.rows:
+                if not user_products:
                     print("Your table is empty")
                 else:
-                    max_number = 0
-                    for _ in food:
-                        max_number += 1
+                    max_number = len(user_products)
                     number = number_validator("Number of product", max_number)
 
                     db = read_db()
@@ -137,16 +131,19 @@ def calorie_calculator():
                     print(f"Product {delete_product} has been deleted")
             case "4":
                 product_title = title_validator()
-                energy = epfc_validator(ENERGY)
+                if product_title in food:
+                    print(f"Product {product_title} already exist in main table")
+                    return
+                energy = epfc_validator(CALORIES)
                 protein = epfc_validator(PROTEIN)
                 fat = epfc_validator(FAT)
                 carbohydrate = epfc_validator(CARBOHYDRATE)
 
-                food[product_title] = {ENERGY: energy, PROTEIN: protein, FAT: fat,
+                food[product_title] = {CALORIES: energy, PROTEIN: protein, FAT: fat,
                                        CARBOHYDRATE: carbohydrate}
 
                 new_table = PrettyTable()
-                new_table.field_names = ["№", f"{FOOD_NAME}-g", f"{ENERGY}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
+                new_table.field_names = ["№", f"{FOOD_NAME}-g", f"{CALORIES}/100g", f"{PROTEIN}/100g", f"{FAT}/100g",
                                          f"{CARBOHYDRATE}/100g"]
                 write_food(food)
                 food = read_food()

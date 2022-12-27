@@ -53,6 +53,7 @@ def int_validator(characteristic):
                 print(f"{characteristic} not valid(only int, min: 1, max: 120).")
         if characteristic == PHYSICAL_ACTIVITY:
             if not data.isdigit():
+                print("")
                 print(f"{characteristic} not valid(only int, min: 1, max: 4).")
                 continue
             elif 1 <= int(data) <= 4:

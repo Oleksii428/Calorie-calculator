@@ -19,8 +19,8 @@ def epfc_validator(characteristic):
         except ValueError:
             print(f"{characteristic} not valid. Only int or float.")
         else:
-            if data < 0.1 or data > 5000:
-                print(f"{characteristic} not valid(min: 1, max: 5000).")
+            if data < 0 or data > 5000:
+                print(f"{characteristic} not valid(min: 0.1, max: 5000).")
             else:
                 return float(data)
 

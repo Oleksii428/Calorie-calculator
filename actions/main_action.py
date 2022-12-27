@@ -25,14 +25,22 @@ def change_user_info():
 
     user_info = login_user.copy()
     user_info.pop(NAME)
-    change_characteristic = input(f"Select what you want to change: {', '.join(user_info)}, or back: ")
+    print("Select property you want to change:")
+    for key in user_info:
+        print(key)
+    change_characteristic = input(f"Enter property, or back: ")
 
     if change_characteristic == "back":
         return
 
     while change_characteristic not in login_user:
         print("Invalid characteristic")
-        change_characteristic = input(f"Select what you want to change: {', '.join(user_info)}: ")
+        print("Select property you want to change:")
+        for key in user_info:
+            print(key)
+        change_characteristic = input(f"Enter property, or back: ")
+        if change_characteristic == "back":
+            return
 
     new_value = 0
 
@@ -158,15 +166,10 @@ def get_recommendations():
         "carbohydrate": f"from {round(carbohydrate_min)} to {round(carbohydrate_max)}"
     }
 
-    print(f"Ваш індекс маси тіла = {round(imt, 4)}.")
-    print(f"Категорія Вашої  ваги: {weight_type}.")
-    print(f"Рекомендація щодо цілей харчування: {food_course}.")
-    if food_course == LOWER:
-        print(
-            "Увага! Найважливіше для тих, хто бажає схуднути - менше калорій, ніж потрібно для базового обміну "
-            "речовин, вживати не можна. Так людина не худне, а завдає непоправної шкоди здоров'ю!!!"
-        )
-    print(f"Добова норма споживаних калорій: {round(daily_calorie_norm)}.")
-    print(f"Баланс білків, жирів і вуглеводів: ")
+    print(f"Your body mass index = {round(imt, 1)}.")
+    print(f"Weight type: {weight_type}.")
+    print(f"Recommended food course: {food_course}.")
+    print(f"Daily calorie norm: {round(daily_calorie_norm)}.")
+    print(f"Balance protein, fats and carbohydrate:")
     for key in pfc:
         print(f"{key}: {pfc[key]}")
